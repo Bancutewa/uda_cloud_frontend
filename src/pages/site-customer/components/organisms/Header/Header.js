@@ -19,14 +19,14 @@ const Header = () => {
 
     const fetchData = async () => {
         try {
-            const fetchedCategories = await fetchCategoriesApi();
-            setCategories(fetchedCategories.data.categories);
-
-
+            const res = await fetchCategoriesApi();
+            const categories = res.data?.data?.categories || [];
+            setCategories(categories);
         } catch (error) {
             console.error("Error fetching products:", error);
         }
     };
+
 
     const LogOut = () => {
         localStorage.removeItem('token');

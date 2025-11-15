@@ -19,9 +19,22 @@ const OffCanvas = () => {
         const fetchData = async () => {
             try {
                 const token = localStorage.getItem("token");
+
+                if (!token) {
+                    console.warn("No token found → user not logged in.");
+                    return; // Stop here → DO NOT FETCH CART
+                }
+
                 const myDecodedToken = decodeToken(token);
+
+                if (!myDecodedToken) {
+                    console.warn("Invalid token → cannot decode.");
+                    return;
+                }
+
                 const fetchedCart = await fetchCartByIDApi(myDecodedToken.id);
                 setCart(fetchedCart);
+
             } catch (error) {
                 console.error("Error fetching cart:", error);
             }
