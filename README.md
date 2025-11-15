@@ -68,3 +68,38 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+## Docker Deployment
+
+This project includes Docker support for easy deployment.
+
+### Build Docker Image
+
+```bash
+docker build -t frontend-ecommerce:v1 .
+```
+
+### Run Docker Container
+
+```bash
+docker run --name frontend -dp 80:80 frontend-ecommerce:v1
+```
+
+### Check Running Containers
+
+```bash
+docker ps -a
+```
+
+### Docker Configuration
+
+- **Dockerfile**: Multi-stage build using Node.js 18 Alpine for building and Nginx Alpine for serving
+- **nginx.conf**: Nginx configuration with SPA routing support and security headers
+- **.dockerignore**: Excludes unnecessary files from Docker build context
+
+The Docker setup includes:
+- Production-optimized build
+- Gzip compression
+- Security headers
+- Client-side routing support for React Router
+- Static asset caching
