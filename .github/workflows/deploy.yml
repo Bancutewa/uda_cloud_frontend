@@ -1,0 +1,35 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: SSH to EC2 and deploy frontend
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+
+          script: |
+            cd ~/uda_cloud/uda_cloud_frontend
+
+            echo "Pulling latest source..."
+            git pull
+
+            echo "Rebuilding frontend..."
+            cd ~/uda_cloud
+            docker-compose build frontend --no-cache
+
+            echo "Restarting system..."
+            docker-compose up -d
+
+            docker system prune -f
