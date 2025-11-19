@@ -20,7 +20,7 @@ const Header = () => {
     const fetchData = async () => {
         try {
             const res = await fetchCategoriesApi();
-            const categories = res.data?.data?.categories || [];
+            const categories = res.data?.categories || [];
             setCategories(categories);
         } catch (error) {
             console.error("Error fetching products:", error);
@@ -100,9 +100,11 @@ const Header = () => {
                             <div class="container-fluid">
                                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 fw-semibold" >
                                     {categories.slice(0, 7).map((category) =>
-                                        <li class="nav-item dropdown">
-                                            <Link class="nav-link" style={{ whiteSpace: "nowrap" }} to={SCREEN_URL.CATEGORY.replace(':productCategory', category.category)}>
-                                                {category.category}
+                                        <li class="nav-item dropdown" key={category.id}>
+                                            <Link class="nav-link" style={{ whiteSpace: "nowrap" }} to={SCREEN_URL.CATEGORY
+                                                .replace(':urlPath', category.name.toLowerCase().replace(/ /g, '-'))
+                                                .replace(':productCategory', category.id)}>
+                                                {category.name}
                                             </Link>
                                         </li>)}
                                 </ul>
