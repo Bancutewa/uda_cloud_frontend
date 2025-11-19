@@ -14,11 +14,35 @@ const firebaseConfig = {
   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+const requiredKeys = [
+  "apiKey",
+  "authDomain",
+  "projectId",
+  "storageBucket",
+  "messagingSenderId",
+  "appId",
+];
 
-export const storage = getStorage(app)
+const missingKeys = requiredKeys.filter((key) => !firebaseConfig[key]);
+
+let app;
+if (missingKeys.length) {
+  console.warn(
+    `Firebase analytics/storage disabled. Missing env vars: ${missingKeys.join(
+      ", "
+    )}`
+  );
+} else {
+  app = initializeApp(firebaseConfig);
+}
+
+let analytics;
+if (app && typeof window !== "undefined" && firebaseConfig.measurementId) {
+  analytics = getAnalytics(app);
+}
+
+export const storage = app ? getStorage(app) : null;
+export const firebaseApp = app;
