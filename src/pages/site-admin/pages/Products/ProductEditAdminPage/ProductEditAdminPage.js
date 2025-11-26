@@ -20,14 +20,11 @@ const ProductEditAdminPage = () => {
     const [imageUrl, setImageUrl] = useState("");
     const [imageFile, setImageFile] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
-    const [description, setDescription] = useState('')
-
+    const [description, setDescription] = useState("");
 
     const { isLoggedIn, setIsLoggedIn } = useAuth();
 
-
     const [categories, setCategories] = useState([]);
-
 
     useEffect(() => {
         const fetchData = async () => {
@@ -65,20 +62,24 @@ const ProductEditAdminPage = () => {
         }
     };
 
-
     const onChangeProduct = async () => {
         if (!name || !category || !price || !quantity || !description) {
             toast.error("Vui lòng nhập đầy đủ thông tin.");
             return;
         }
+
         try {
+            // Dùng sẵn imageUrl hiện tại, nếu có upload ảnh mới thì sẽ ghi đè sau
+            let finalImageUrl = imageUrl;
+
+            // Nếu có chọn ảnh mới thì upload lên Firebase trước
             if (imageFile) {
                 const storageRef = ref(storage, `productImages/${imageFile.name}`);
                 const uploadTask = uploadBytesResumable(storageRef, imageFile);
 
                 await new Promise((resolve, reject) => {
                     uploadTask.on(
-                        'state_changed',
+                        "state_changed",
                         null,
                         (error) => {
                             console.error("Error uploading image:", error);
@@ -87,29 +88,30 @@ const ProductEditAdminPage = () => {
                         },
                         async () => {
                             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                            setImageUrl(downloadURL)
-                            const updatedProduct = {
-                                id: product.id,
-                                name: name,
-                                price: price,
-                                image: downloadURL,
-                                description: description,
-                                category: category,
-                                quantity: quantity
-                            };
-
-                            await updateProductsAPI(updatedProduct);
-                            toast.success(`Đã cập nhật sản phẩm ID ${product.id}!`);
+                            finalImageUrl = downloadURL; // cập nhật lại link ảnh mới
+                            resolve(null);
                         }
                     );
                 });
             }
 
+            // Luôn gọi API cập nhật, kể cả khi không đổi ảnh
+            const updatedProduct = {
+                id: product.id,
+                name: name,
+                price: price,
+                image: finalImageUrl, // dùng ảnh mới hoặc ảnh cũ
+                description: description,
+                category: category,
+                quantity: quantity,
+            };
 
+            await updateProductsAPI(updatedProduct);
+            toast.success(`Đã cập nhật sản phẩm ID ${product.id}!`);
         } catch (error) {
             if (error.message === "Unauthorized") {
                 toast.error("Bạn không phải là admin.");
-                setIsLoggedIn(false)
+                setIsLoggedIn(false);
             } else {
                 console.error("Error updating product:", error);
                 toast.error("Có lỗi xảy ra khi cập nhật sản phẩm.");
@@ -117,18 +119,28 @@ const ProductEditAdminPage = () => {
         }
     };
 
-
     return (
         <main className="content">
             <div id="form">
                 <h3>Chỉnh sửa sản phẩm</h3>
                 <div className="input-group">
                     <label htmlFor="name">Tên sản phẩm</label>
-                    <input type="text" id="name" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+                    <input
+                        type="text"
+                        id="name"
+                        placeholder="Name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                    />
                 </div>
                 <div className="input-group">
                     <label htmlFor="categorySelect">Danh mục</label>
-                    <select id="categorySelect" name="category" value={category} onChange={(e) => setCategory(e.target.value)}>
+                    <select
+                        id="categorySelect"
+                        name="category"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                    >
                         <option value="">===Chọn Danh Mục===</option>
                         {categories.map((category) => (
                             <option key={category.id} value={category.id}>
@@ -139,17 +151,34 @@ const ProductEditAdminPage = () => {
                 </div>
                 <div className="input-group">
                     <label htmlFor="price">Giá cả</label>
-                    <input type="text" id="price" placeholder="Giá cả" value={price} onChange={(e) => setPrice(e.target.value)} />
+                    <input
+                        type="text"
+                        id="price"
+                        placeholder="Giá cả"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                    />
                 </div>
                 <div className="input-group">
                     <label htmlFor="description">Miêu tả</label>
-                    <input type="text" id="description" placeholder="Miêu tả" value={description} onChange={(e) => setDescription(e.target.value)} />
+                    <input
+                        type="text"
+                        id="description"
+                        placeholder="Miêu tả"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                    />
                 </div>
                 <div className="input-group">
                     <label htmlFor="quantity">Số lượng còn trong kho</label>
-                    <input type="text" id="quantity" placeholder="Số lượng còn trong kho" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+                    <input
+                        type="text"
+                        id="quantity"
+                        placeholder="Số lượng còn trong kho"
+                        value={quantity}
+                        onChange={(e) => setQuantity(e.target.value)}
+                    />
                 </div>
-
 
                 <div className="input-group">
                     <label htmlFor="img">Hình ảnh:</label>
@@ -157,7 +186,13 @@ const ProductEditAdminPage = () => {
                     {previewImage ? (
                         <img src={previewImage} alt="Image Preview" className="img-preview" />
                     ) : (
-                        imageUrl && <img src={imageUrl} alt="Product" style={{ width: "100px", objectFit: "contain" }} />
+                        imageUrl && (
+                            <img
+                                src={imageUrl}
+                                alt="Product"
+                                style={{ width: "100px", objectFit: "contain" }}
+                            />
+                        )
                     )}
                 </div>
                 <div className="">
